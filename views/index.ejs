@@ -1,6 +1,13 @@
 <%- include('partials/header') %>
 
 <h1><%= title %></h1>
-<p>Welcome to your modular EJS page!</p>
+
+<button onclick="loadForm('signup')">Sign Up</button>
+<button onclick="loadForm('signin')">Sign In</button>
+
+<div id="form-container"></div>
+
+<script src="/js/main.js"></script>
+
 
 <%- include('partials/footer') %>
