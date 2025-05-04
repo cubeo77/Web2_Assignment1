@@ -4,7 +4,7 @@ const express = require('express');
 const path = require('path');
 const app = express();
 const session = require('express-session');
-const port = process.env.PORT || 8000; 
+const port = process.env.PORT || 8000;
 
 // MongoDB connection
 const MongoStore = require('connect-mongo');
@@ -14,11 +14,10 @@ const { MongoClient } = require('mongodb');
 
 // Session store MongoClient (used by connect-mongo only, internally managed)
 const sessionStore = MongoStore.create({
-  mongoUrl: mongoUri,
-  crypto: {
-    secret: process.env.MONGODB_SESSION_SECRET
-  },
-  ttl: 60 * 60 // 1 hour expiration
+    mongoUrl: mongoUri,
+    crypto: {
+        secret: process.env.MONGODB_SESSION_SECRET
+    }
 });
 
 // Application logic MongoClient (used by your routes)
@@ -33,8 +32,8 @@ const saltRounds = 12;
 // Joi for validation
 const Joi = require('joi');
 const loginSchema = Joi.object({
-  username: Joi.string().min(4).max(25).required(),
-  password: Joi.string().min(6).max(25).required()
+    username: Joi.string().min(4).max(25).required(),
+    password: Joi.string().min(6).max(25).required()
 });
 
 
@@ -44,11 +43,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(session({
     secret: process.env.NODE_SESSION_SECRET,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     store: sessionStore,
-    cookie: { maxAge: 60 * 60 * 1000 } // 1 hour
-  }));
-  
+    cookie: { maxAge: 60 * 60 } // 1 hour
+}));
+
 
 // Set EJS as the templating engine
 app.set('view engine', 'ejs');
@@ -61,24 +60,24 @@ app.use(express.static('public/images'));
 
 (async () => {
     try {
-      await appClient.connect();
-      console.log("App MongoClient connected");
-  
-      // Start server only after DB connection
-      app.listen(port, () => {
-        console.log(`Server running at http://localhost:${port}`);
-      });
+        await appClient.connect();
+        console.log("App MongoClient connected");
+
+        // Start server only after DB connection
+        app.listen(port, () => {
+            console.log(`Server running at http://localhost:${port}`);
+        });
     } catch (err) {
-      console.error("MongoDB connection failed:", err);
-      process.exit(1); // stop the app
+        console.error("MongoDB connection failed:", err);
+        process.exit(1); // stop the app
     }
-  })();
-  
+})();
+
 
 // Routes
 app.get('/', (req, res) => {
 
-      
+
 
     if (req.session.user) {
         console.log(`User ${req.session.user} is already signed in.`);
@@ -98,18 +97,18 @@ app.get('/form/signin', (req, res) => {
 });
 
 app.get('/logout', (req, res) => {
-
-    req.session.destroy(err => {
+    req.session.destroy((err) => {
         if (err) {
             console.error('Error destroying session:', err);
             return res.status(500).send('Internal Server Error');
         }
         res.clearCookie('connect.sid');
-        console.log('Session destroyed successfully.');
-
+        console.log('Session destroyed and cookie cleared.');
         res.redirect('/');
-    })
+    });
 });
+
+
 
 app.get('/members', (req, res) => {
     if (req.session.user) {
@@ -130,8 +129,8 @@ app.post('/signin', async (req, res) => {
     const { error, value } = loginSchema.validate(req.body);
 
     if (error) {
-      console.warn('Validation failed:', error.details);
-      return res.status(400).send('Invalid input');
+        console.warn('Validation failed:', error.details);
+        return res.status(400).send('Invalid input');
     }
 
     const { username, password } = value;
@@ -213,7 +212,7 @@ app.post('/signup', async (req, res) => {
 });
 
 
-app.get("*dummy", (req,res) => {
+app.get("*dummy", (req, res) => {
     res.status(404);
     res.send("Page not found - 404");
 });
