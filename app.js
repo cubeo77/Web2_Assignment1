@@ -7,10 +7,23 @@ const session = require('express-session');
 const port = process.env.PORT || 8000; 
 
 // MongoDB connection
-const {MongoClient} = require('mongodb');
 const MongoStore = require('connect-mongo');
 const mongoUri = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}/${process.env.MONGODB_DATABASE}?retryWrites=true&w=majority`;
-const client = new MongoClient(mongoUri);
+
+const { MongoClient } = require('mongodb');
+
+// Session store MongoClient (used by connect-mongo only, internally managed)
+const sessionStore = MongoStore.create({
+  mongoUrl: mongoUri,
+  crypto: {
+    secret: process.env.MONGODB_SESSION_SECRET
+  },
+  ttl: 60 * 60 // 1 hour expiration
+});
+
+// Application logic MongoClient (used by your routes)
+const appClient = new MongoClient(mongoUri); // you manage connection manually
+
 
 
 // Bcrypt for password hashing
@@ -32,15 +45,10 @@ app.use(session({
     secret: process.env.NODE_SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    store: MongoStore.create({
-        mongoUrl: mongoUri,
-        crypto: {
-          secret: process.env.MONGODB_SESSION_SECRET
-        },
-        ttl: 60 * 60  // sessions expire in 1 hour
-    }),
-    cookie: { maxAge: 10000 * 60 * 60 } // 1 hour
-}));
+    store: sessionStore,
+    cookie: { maxAge: 60 * 60 * 1000 } // 1 hour
+  }));
+  
 
 // Set EJS as the templating engine
 app.set('view engine', 'ejs');
@@ -51,10 +59,32 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static('public'));
 app.use(express.static('public/images'));
 
+(async () => {
+    try {
+      await appClient.connect();
+      console.log("App MongoClient connected");
+  
+      // Start server only after DB connection
+      app.listen(port, () => {
+        console.log(`Server running at http://localhost:${port}`);
+      });
+    } catch (err) {
+      console.error("MongoDB connection failed:", err);
+      process.exit(1); // stop the app
+    }
+  })();
+  
+
 // Routes
 app.get('/', (req, res) => {
 
-    console.log('Client is' + process.env.NODE_SESSION_SECRET);
+    console.log({
+        host: process.env.MONGODB_HOST,
+        user: process.env.MONGODB_USER,
+        pass: process.env.MONGODB_PASSWORD,
+        db: process.env.MONGODB_DATABASE
+      });
+      
 
     if (req.session.user) {
         console.log(`User ${req.session.user} is already signed in.`);
@@ -115,8 +145,7 @@ app.post('/signin', async (req, res) => {
     if (username && password) {
         console.log(`Received sign in request for user ${username}`);
         try {
-            await client.connect();
-            const result = await client.db("Assignment1").collection("users").findOne({ username: username });
+            const result = await appClient.db("Assignment1").collection("users").findOne({ username: username });
 
             if (result) {
                 console.log(`User ${username} found in database.`);
@@ -140,7 +169,6 @@ app.post('/signin', async (req, res) => {
         }
         finally {
             // Close the connection
-            await client.close();
             console.log("Connection closed");
         }
     } else {
@@ -165,7 +193,6 @@ app.post('/signup', async (req, res) => {
 
     if (username && password && email) {
         try {
-            await client.connect();
             console.log("Connected to MongoDB");
 
             hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -175,7 +202,7 @@ app.post('/signup', async (req, res) => {
                 email: email
             };
 
-            const result = await client.db("Assignment1").collection("users").insertOne(newUser);
+            const result = await appClient.db("Assignment1").collection("users").insertOne(newUser);
             console.log(`New user created with the following id: ${result.insertedId}`);
 
             req.session.user = username;
@@ -184,7 +211,6 @@ app.post('/signup', async (req, res) => {
             console.error("Error creating user:", err);
             res.status(500).send('Internal Server Error');
         } finally {
-            await client.close();
         }
     } else {
         console.log('Username, password, or email not provided.');
