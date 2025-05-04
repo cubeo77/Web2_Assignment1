@@ -4,7 +4,7 @@ const express = require('express');
 const path = require('path');
 const app = express();
 const session = require('express-session');
-const port = 8000;
+const port = process.env.PORT || 8000; 
 
 // MongoDB connection
 const {MongoClient} = require('mongodb');
