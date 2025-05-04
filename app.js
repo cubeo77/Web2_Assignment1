@@ -54,6 +54,8 @@ app.use(express.static('public/images'));
 // Routes
 app.get('/', (req, res) => {
 
+    console.log('Client is' + process.env.NODE_SESSION_SECRET);
+
     if (req.session.user) {
         console.log(`User ${req.session.user} is already signed in.`);
         return res.redirect('/members');
