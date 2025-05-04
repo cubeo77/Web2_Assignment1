@@ -78,12 +78,6 @@ app.use(express.static('public/images'));
 // Routes
 app.get('/', (req, res) => {
 
-    console.log({
-        host: process.env.MONGODB_HOST,
-        user: process.env.MONGODB_USER,
-        pass: process.env.MONGODB_PASSWORD,
-        db: process.env.MONGODB_DATABASE
-      });
       
 
     if (req.session.user) {
