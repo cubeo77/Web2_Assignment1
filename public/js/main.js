@@ -1,4 +1,6 @@
 
+const { database } = require('../database.js');
+
 function loadForm(type) {
     fetch(`/form/${type}`)
         .then(res => res.text())
@@ -12,7 +14,7 @@ function invalidMessage(type) {
     errorMessage.innerHTML = `Invalid ${type}`;
 }
 
-function randomImage(){
+function randomImage() {
 
     const images = [
         'images/Flask1.jpg',
@@ -22,4 +24,41 @@ function randomImage(){
     const randomIndex = Math.floor(Math.random() * images.length);
     const randomImage = images[randomIndex];
     document.getElementById('random-image').src = randomImage;
+}
+
+// Promote user
+function promoteUser(email) {
+    fetch("/admin/promote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+    })
+        .then((res) => {
+            if (res.ok) {
+                res.session.type = "admin";
+                alert("User promoted to admin!");
+                location.reload();
+            } else {
+                alert("Failed to promote user.");
+            }
+        })
+        .catch((err) => console.error("Error:", err));
+}
+
+// Demote user
+function demoteUser(email) {
+    fetch("/admin/demote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+    })
+        .then((res) => {
+            if (res.ok) {
+                alert("User demoted.");
+                location.reload();
+            } else {
+                alert("Failed to demote user.");
+            }
+        })
+        .catch((err) => console.error("Error:", err));
 }

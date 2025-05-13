@@ -1,13 +1,13 @@
 <%- include('partials/header') %>
 
-<h1><%= title %></h1>
 
-<button onclick="loadForm('signup')">Sign Up</button>
-<button onclick="loadForm('signin')">Sign In</button>
+<div class="container w-50 mt-5 ">
+    <button onclick="loadForm('signup')" class="btn btn-primary btn-sm">Sign Up</button>
+    <button onclick="loadForm('signin')" class="btn btn-primary btn-sm">Sign In</button>
+</div>
+
 
 <div id="form-container"></div>
-
-<script src="/js/main.js"></script>
 
 
 <%- include('partials/footer') %>

@@ -6,6 +6,10 @@ const app = express();
 const session = require('express-session');
 const port = process.env.PORT || 8000;
 
+//middleware
+const {isAdmin} = require('./middleware/authorization');
+const {authenticated} = require('./middleware/authentication');
+
 // MongoDB connection
 const MongoStore = require('connect-mongo');
 const mongoUri = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_HOST}/${process.env.MONGODB_DATABASE}?retryWrites=true&w=majority`;
@@ -77,15 +81,13 @@ app.use(express.static('public/images'));
 // Routes
 app.get('/', (req, res) => {
 
-
-
     if (req.session.user) {
         console.log(`User ${req.session.user} is already signed in.`);
         return res.redirect('/members');
     }
     console.log('User is not signed in, rendering index page.');
 
-    res.render('index', { title: 'Welcome to my Site!' });
+    res.render('index');
 });
 
 app.get('/form/signup', (req, res) => {
@@ -122,7 +124,15 @@ app.get('/invalid', (req, res) => {
     res.render('invalid');
 }
 );
+const adminRoutes = require('./routes/admin');
+app.use('/admin', adminRoutes);
 
+app.get('/admin', authenticated, isAdmin, async (req, res, next) => {
+    
+    const users = await appClient.db("Assignment1").collection("users").find().toArray();
+    res.render('admin', { title: req.session.user, users: users });
+}
+);
 
 app.post('/signin', async (req, res) => {
 
@@ -147,6 +157,8 @@ app.post('/signin', async (req, res) => {
                 if (match) {
                     console.log(`Password for user ${username} is correct.`);
                     req.session.user = username;
+                    req.session.type = result.type;
+                    req.session.email = result.email;
                     res.redirect('/members');
                 } else {
                     console.log(`Incorrect password for user ${username}.`);
@@ -192,13 +204,16 @@ app.post('/signup', async (req, res) => {
             const newUser = {
                 username: username,
                 password: hashedPassword,
-                email: email
+                email: email,
+                type: 'user'
             };
 
             const result = await appClient.db("Assignment1").collection("users").insertOne(newUser);
             console.log(`New user created with the following id: ${result.insertedId}`);
 
             req.session.user = username;
+            req.session.type = 'user';
+            req.session.email = email;
             res.redirect('/members');
         } catch (err) {
             console.error("Error creating user:", err);
