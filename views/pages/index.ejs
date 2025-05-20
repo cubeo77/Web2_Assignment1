@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <!-- <link rel="stylesheet" href="style.css"> -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/styles.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-qVBUq2nZR+AYr4Vs2kaYQn1V64IHFzrsr2E0e0zraFMh6apZcDAqzGHj+e0CwW5y"
+    crossorigin="anonymous"></script>
+
+
+  <!-- import jQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <!-- <script src="index.js"></script> -->
+</head>
+
+
+<body>
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-4">
+        <h1 id="title">Pokémon Match</h1>
+        <ul class="list-group list-group-flush" id="list">
+          <li class="list-group-item">
+            <form id="gameForm">
+              <div></div>
+              <input type="radio" name="difficulty" value="easy" checked> Easy
+              <input type="radio" name="difficulty" value="medium"> Medium
+
+              <input type="radio" name="difficulty" value="hard"> Hard
+              <button type="submit" class="btn btn-success">Start Game</button>
+            </form>
+          </li>
+
+          <li class="list-group-item">
+            <div id="attempts">Attempts: 0</div>
+          </li>
+          <li class="list-group-item">
+            <div id="totalPairs">Pairs Left: 0</div>
+          </li>
+          <li class="list-group-item">
+            <div id="matches">Matches: 0</div>
+          </li>
+          <li class="list-group-item">
+            <div id="numOfGames">Games: 0</div>
+          </li>
+          <li class="list-group-item">
+            <div id="timer">Time: 0</div>
+            <div id="gameState"></div>
+          </li>
+          <li class="list-group-item">
+            <button onclick="resetGame()" class="btn btn-danger">Reset Game</button>
+            <button onclick="powerUp()" class="btn btn-warning">Power Up</button>
+
+          </li>
+          <li class="list-group-item">
+            <button id="themeToggle" class="btn btn-secondary">Toggle Theme</button>
+
+            <body id="pageBody"></body>
+          </li>
+        </ul>
+
+      </div>
+      <div id="game_grid" class="col-8">
+
+      </div>
+
+    </div>
+
+
+
+
+  </div>
+  <script src="js/main.js" defer></script>
+</body>
+
+</html>
